@@ -1,42 +1,75 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * Adds the `reveal-in` class the first time an element scrolls into view.
  * Paired with the `.reveal` utility in globals.css — no animation library, and
  * it respects prefers-reduced-motion via the CSS rather than in JS.
  *
+ * A single module-level IntersectionObserver is shared by every consumer. The
+ * previous version created one observer per element, which meant ~20 observers
+ * on the reviews and gallery pages; the browser had to run each of them against
+ * every scroll frame.
+ *
  * No IntersectionObserver fallback: Next.js 16 already requires Chrome 111+ /
  * Safari 16.4+, which all support it.
  */
-export function useReveal<T extends HTMLElement = HTMLDivElement>(
-  options: { threshold?: number; rootMargin?: string } = {},
-) {
-  const ref = useRef<T>(null);
-  const [revealed, setRevealed] = useState(false);
 
-  useEffect(() => {
-    const element = ref.current;
-    if (element === null || revealed) return;
+type Callback = () => void;
 
-    const observer = new IntersectionObserver(
+let observer: IntersectionObserver | null = null;
+const callbacks = new WeakMap<Element, Callback>();
+
+function getObserver(): IntersectionObserver {
+  if (observer === null) {
+    observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setRevealed(true);
-            observer.disconnect();
+          if (!entry.isIntersecting) continue;
+          const callback = callbacks.get(entry.target);
+          if (callback !== undefined) {
+            callback();
+            // One-shot: stop watching as soon as it has been revealed.
+            callbacks.delete(entry.target);
+            observer?.unobserve(entry.target);
           }
         }
       },
-      {
-        threshold: options.threshold ?? 0.12,
-        rootMargin: options.rootMargin ?? "0px 0px -60px 0px",
-      },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" },
     );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [revealed, options.threshold, options.rootMargin]);
+  }
+  return observer;
+}
+
+export function useReveal<T extends HTMLElement = HTMLDivElement>() {
+  const [revealed, setRevealed] = useState(false);
+  const elementRef = useRef<T | null>(null);
+
+  // Callback ref rather than useEffect, so the element is registered the moment
+  // it mounts and unregistered on unmount without an extra render pass.
+  const ref = useCallback((node: T | null) => {
+    const previous = elementRef.current;
+    if (previous !== null) {
+      callbacks.delete(previous);
+      getObserver().unobserve(previous);
+    }
+    elementRef.current = node;
+    if (node !== null) {
+      callbacks.set(node, () => setRevealed(true));
+      getObserver().observe(node);
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      const node = elementRef.current;
+      if (node !== null) {
+        callbacks.delete(node);
+        observer?.unobserve(node);
+      }
+    };
+  }, []);
 
   return { ref, className: revealed ? "reveal reveal-in" : "reveal" };
 }

@@ -34,10 +34,13 @@ export default function TestimonialsPage() {
 
       <section className="bg-background py-16 lg:py-24">
         <Container>
-          <div className="columns-1 gap-6 md:columns-2 lg:columns-3 [&>*]:mb-6">
+          {/* Grid, not `columns` — see the note in the commit. Multi-column
+              layout re-flows on every transform change, which made this page
+              janky to scroll with 18 animated cards. */}
+          <div className="grid items-start gap-6 md:grid-cols-2 lg:grid-cols-3">
             {testimonials.map((testimonial, index) => (
               <Reveal key={testimonial.author} delay={(index % 3) * 70}>
-                <figure className="break-inside-avoid rounded-2xl border border-black/8 bg-card p-7">
+                <figure className="h-full rounded-2xl border border-black/8 bg-card p-7">
                   <Quote className="size-6 text-brand-500" />
                   <blockquote className="mt-4 text-[15px] leading-relaxed text-foreground">
                     &ldquo;{testimonial.quote}&rdquo;

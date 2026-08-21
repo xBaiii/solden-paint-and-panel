@@ -186,19 +186,32 @@ export default function HomePage() {
       {/* ================= QUICK LINKS ================= */}
       <section className="border-b border-black/8 bg-surface-2">
         <Container className="py-6">
-          <div className="flex items-center gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              Popular
-            </span>
-            {quickLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="shrink-0 rounded-full border border-black/10 bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-brand-500/60 hover:text-brand-700"
-              >
-                {link.label}
-              </Link>
-            ))}
+          {/* Negative margins let the row scroll edge-to-edge on a phone
+              rather than stopping at the container gutter, and the mask fades
+              the overflow so it reads as scrollable. */}
+          <div
+            className="-mx-6 overflow-x-auto px-6 lg:-mx-12 lg:px-12 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            style={{
+              maskImage:
+                "linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%)",
+            }}
+          >
+            <div className="flex w-max items-center gap-2.5 sm:gap-3">
+              <span className="shrink-0 pr-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                Popular
+              </span>
+              {quickLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="shrink-0 rounded-full border border-black/10 bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-brand-500/60 hover:text-brand-700 active:scale-[0.98]"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </Container>
       </section>
@@ -217,9 +230,9 @@ export default function HomePage() {
           <div className="mt-14 grid gap-6 md:grid-cols-3">
             {differences.map((item, index) => (
               <Reveal key={item.title} delay={index * 90}>
-                <div className="h-full rounded-2xl border border-black/8 bg-card p-7">
-                  <div className="inline-flex size-12 items-center justify-center rounded-xl bg-brand-50">
-                    <item.icon className="size-5.5 text-brand-700" />
+                <div className="group h-full rounded-2xl border border-black/8 bg-card p-7 transition-all duration-300 hover:-translate-y-1 hover:border-brand-500/40 hover:shadow-lg">
+                  <div className="flex size-13 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 ring-1 ring-brand-500/15 transition-colors group-hover:from-brand-100 group-hover:to-brand-200">
+                    <item.icon className="size-6 text-brand-700" strokeWidth={1.75} />
                   </div>
                   <h3 className="mt-5 text-lg font-semibold tracking-tight">
                     {item.title}
@@ -337,14 +350,21 @@ export default function HomePage() {
           <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {process.map((item, index) => (
               <Reveal key={item.step} delay={index * 80}>
-                <div className="relative h-full rounded-2xl border border-black/8 bg-card p-7">
-                  <span className="font-mono text-xs font-semibold text-brand-600">
+                <div className="group relative h-full overflow-hidden rounded-2xl border border-black/8 bg-card p-7 transition-colors hover:border-brand-500/40">
+                  {/* Step number sits in the corner as a watermark, so it can
+                      never collide with the icon tile the way it did when both
+                      were in normal flow. */}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute right-5 top-3 font-mono text-4xl font-bold text-black/5 transition-colors group-hover:text-brand-600/15"
+                  >
                     {item.step}
                   </span>
-                  <div className="mt-4 inline-flex size-11 items-center justify-center rounded-xl bg-ink-900">
+                  <div className="flex size-12 items-center justify-center rounded-xl bg-ink-900 shadow-sm">
                     <item.icon className="size-5 text-brand-neon" />
                   </div>
-                  <h3 className="mt-4 text-base font-semibold tracking-tight">
+                  <h3 className="mt-5 text-base font-semibold tracking-tight">
+                    <span className="sr-only">Step {item.step}: </span>
                     {item.title}
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">

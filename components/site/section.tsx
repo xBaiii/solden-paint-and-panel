@@ -18,7 +18,8 @@ export function Reveal({
   return (
     <div
       ref={ref}
-      className={cn(revealClass, className)}
+      // h-full so a revealed card can still fill its grid cell.
+      className={cn(revealClass, "h-full", className)}
       style={delay > 0 ? { transitionDelay: `${delay}ms` } : undefined}
     >
       {children}

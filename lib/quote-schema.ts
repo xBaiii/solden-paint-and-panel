@@ -162,6 +162,30 @@ export const QUOTE_STEPS: QuoteStep[] = [
   },
 ];
 
+/**
+ * Maps a service landing page onto the damage type it implies, so arriving at
+ * /quote?service=paintless-dent-removal starts with "Dents & dings" already
+ * ticked instead of making the customer re-state what they just clicked.
+ *
+ * Services that describe a vehicle class or a process rather than a kind of
+ * damage (trucks, tinting, mechanical) deliberately map to nothing — guessing
+ * there would put a wrong answer in front of the customer.
+ */
+export const SERVICE_DAMAGE_MAP: Record<string, string[]> = {
+  "smash-repairs": ["collision"],
+  "spray-painting": ["respray"],
+  "paintless-dent-removal": ["dent"],
+  "protection-liners": ["custom"],
+  "custom-paint": ["custom"],
+  "motorcycle-paintwork": ["custom"],
+  detailing: ["detailing"],
+  "glass-replacement": ["glass"],
+  "colour-coding": ["custom"],
+  "vehicle-restorations": ["rust", "respray"],
+  "welding-and-fibreglass": ["collision"],
+  "wheels-tyres-alignment": ["custom"],
+};
+
 export const quoteDefaults: QuoteValues = {
   damageTypes: [],
   description: "",

@@ -46,21 +46,28 @@ export function GalleryGrid({ images }: { images: GalleryImage[] }) {
         ))}
       </div>
 
-      <div className="mt-8 columns-2 gap-4 sm:columns-3 lg:columns-4 [&>*]:mb-4">
-        {filtered.map((image) => (
+      {/* Fixed-ratio grid rather than `columns` masonry: multi-column layout
+          re-balances on every transform/paint change, which is expensive with
+          20+ images, and it also caused layout shift as images decoded. */}
+      <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        {filtered.map((image, index) => (
           <button
             key={image.src}
             type="button"
             onClick={() => setLightbox(image)}
-            className="group relative block w-full overflow-hidden rounded-xl border border-black/8 bg-surface-2 outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className={cn(
+              "group relative block overflow-hidden rounded-xl border border-black/8 bg-surface-2 outline-none [contain:paint] focus-visible:ring-2 focus-visible:ring-brand-500",
+              image.tall === true ? "aspect-3/4" : "aspect-4/3",
+            )}
           >
             <Image
               src={image.src}
               alt={image.alt}
-              width={800}
-              height={image.tall === true ? 1100 : 640}
+              fill
+              // Only the first row is likely above the fold.
+              loading={index < 4 ? "eager" : "lazy"}
               sizes="(min-width: 1024px) 24vw, (min-width: 640px) 32vw, 48vw"
-              className="h-auto w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+              className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
             />
             <span className="absolute inset-0 bg-ink-950/0 transition-colors duration-300 group-hover:bg-ink-950/20" />
           </button>

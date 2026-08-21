@@ -12,7 +12,12 @@ export const site = {
   legalName: "Solden Paint and Panel",
   tagline: "All private, fleet & insurance companies welcome",
   slogan: "Done right the first time... on time",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.soldenpaintandpanel.com.au",
+  /**
+   * Trailing slashes are stripped: every consumer builds URLs as `${site.url}/path`,
+   * so a env value ending in "/" produced "https://host//path" in the sitemap.
+   */
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.soldenpaintandpanel.com.au")
+    .replace(/\/+$/, ""),
 
   phone: {
     primary: "(07) 3205 2988",

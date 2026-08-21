@@ -96,22 +96,28 @@ export function SiteHeader({
   return (
     <header
       className={cn(
-        "fixed z-50 transition-all duration-500",
-        piled ? "top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-4" : "top-0 left-0 right-0",
+        // Only inset/padding change here — `transition-all` would also animate
+        // properties that force layout on every scroll-state flip.
+        "fixed z-50 [transition:top_400ms_ease,left_400ms_ease,right_400ms_ease]",
+        piled
+          ? "top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-4"
+          : "top-0 left-0 right-0",
       )}
     >
       <nav
         aria-label="Main"
         className={cn(
-          "mx-auto transition-all duration-500",
+          // backdrop-blur is the expensive part; `will-change` keeps it on its
+          // own compositor layer instead of repainting the bar as you scroll.
+          "mx-auto [transition:max-width_400ms_ease,background-color_300ms_ease,border-color_300ms_ease,box-shadow_300ms_ease,border-radius_300ms_ease]",
           piled
-            ? "max-w-[1200px] rounded-2xl border border-black/10 bg-background/80 shadow-lg backdrop-blur-xl"
+            ? "max-w-[1200px] rounded-2xl border border-black/10 bg-background/80 shadow-lg backdrop-blur-xl [will-change:background-color]"
             : "max-w-[1400px] border border-transparent bg-transparent",
         )}
       >
         <div
           className={cn(
-            "flex items-center justify-between px-5 transition-all duration-500 lg:px-8",
+            "flex items-center justify-between px-5 [transition:height_400ms_ease] lg:px-8",
             piled ? "h-14" : "h-20",
           )}
         >
@@ -310,7 +316,9 @@ export function SiteHeader({
       {/* --- mobile overlay -------------------------------------------- */}
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-background transition-all duration-500 lg:hidden",
+          // z-45: above the sticky call/quote bar (z-40), below the nav bar
+          // (z-50) so the close button stays reachable.
+          "fixed inset-0 z-[45] bg-background transition-opacity duration-300 lg:hidden",
           menuOpen ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       >

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowUpRight, Mail, MapPin, Navigation, Phone } from "lucide-react";
 import { Container, SectionHeading } from "@/components/site/section";
 import { PageHero } from "@/components/site/page-hero";
 import { ContactForm } from "@/components/site/contact-form";
+import { OpeningHours } from "@/components/site/opening-hours";
 import { ServiceAreaList } from "@/components/site/service-area-note";
 import { BreadcrumbJsonLd } from "@/components/site/json-ld";
 import { site } from "@/lib/site";
@@ -23,6 +24,9 @@ export default function ContactPage() {
   const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(
     site.address.mapsQuery,
   )}&output=embed`;
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+    site.address.mapsQuery,
+  )}`;
 
   return (
     <>
@@ -35,95 +39,134 @@ export default function ContactPage() {
         breadcrumbs={breadcrumbs}
       />
 
-      {/* ---------- details ---------- */}
-      <section className="bg-background py-16 lg:py-20">
-        <Container>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl border border-black/8 bg-card p-6">
-              <Phone className="size-5 text-brand-600" />
-              <h2 className="mt-4 text-sm font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                Phone
-              </h2>
-              <a
-                href={site.phone.primaryHref}
-                className="mt-2 block text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-brand-700"
-              >
-                {site.phone.primary}
-              </a>
-              <a
-                href={site.phone.secondaryHref}
-                className="mt-1 block text-sm text-muted-foreground transition-colors hover:text-brand-700"
-              >
-                {site.phone.secondary}
-              </a>
-            </div>
+      {/* ---------- map: full width, address card floated over it ---------- */}
+      <section className="relative" style={{ contentVisibility: "visible" }}>
+        <div className="relative h-[320px] w-full bg-surface-2 sm:h-[420px]">
+          <iframe
+            title={`Map showing ${site.name} at ${site.address.full}`}
+            src={mapSrc}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="size-full border-0"
+          />
 
-            <div className="rounded-2xl border border-black/8 bg-card p-6">
-              <Mail className="size-5 text-brand-600" />
-              <h2 className="mt-4 text-sm font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                Email
-              </h2>
-              <a
-                href={`mailto:${site.email}`}
-                className="mt-2 block break-all text-base font-semibold tracking-tight text-foreground transition-colors hover:text-brand-700"
-              >
-                {site.email}
-              </a>
-            </div>
-
-            <div className="rounded-2xl border border-black/8 bg-card p-6">
-              <MapPin className="size-5 text-brand-600" />
-              <h2 className="mt-4 text-sm font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                Workshop
-              </h2>
-              <p className="mt-2 text-base font-semibold leading-snug tracking-tight text-foreground">
+          {/* Floated like a Maps info window. Hidden below md, where a card over
+              a 320px map would cover most of it. */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 hidden justify-start p-5 md:flex">
+            <div className="pointer-events-auto max-w-xs rounded-xl border border-black/10 bg-background/95 p-4 shadow-lg backdrop-blur">
+              <p className="text-sm font-semibold text-foreground">
+                {site.legalName}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 {site.address.street}
                 <br />
                 {site.address.suburb} {site.address.state} {site.address.postcode}
               </p>
+              <a
+                href={directionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-full bg-ink-900 px-4 text-xs font-semibold text-white transition-colors hover:bg-ink-800"
+              >
+                <Navigation className="size-3.5" />
+                Get directions
+              </a>
             </div>
+          </div>
+        </div>
 
-            <div className="rounded-2xl border border-black/8 bg-card p-6">
-              <Clock className="size-5 text-brand-600" />
-              <h2 className="mt-4 text-sm font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                Hours
+        <div className="border-b border-black/8 bg-surface-2 p-5 md:hidden">
+          <p className="text-sm font-semibold">{site.address.full}</p>
+          <a
+            href={directionsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex h-11 items-center gap-1.5 rounded-full bg-ink-900 px-5 text-sm font-semibold text-white"
+          >
+            <Navigation className="size-4" />
+            Get directions
+          </a>
+        </div>
+      </section>
+
+      {/* ---------- details | form ---------- */}
+      <section className="bg-background py-14 lg:py-20">
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+            {/* --- left: how to reach us --- */}
+            <div className="rounded-2xl border border-black/8 bg-card p-6 sm:p-7 lg:p-8">
+              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                Contact us
               </h2>
-              <ul className="mt-2 space-y-1">
-                {site.hours.map((entry) => (
-                  <li key={entry.days} className="text-sm text-foreground">
-                    <span className="font-semibold">{entry.days}</span>
-                    <br />
-                    <span className="text-muted-foreground">{entry.time}</span>
-                  </li>
-                ))}
-              </ul>
+
+              <div className="mt-7 space-y-5">
+                <div className="flex gap-3.5">
+                  <Phone className="mt-0.5 size-5 shrink-0 text-brand-600" />
+                  <div>
+                    <a
+                      href={site.phone.primaryHref}
+                      className="block text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-brand-700"
+                    >
+                      {site.phone.primary}
+                    </a>
+                    <a
+                      href={site.phone.secondaryHref}
+                      className="mt-0.5 block text-sm text-muted-foreground transition-colors hover:text-brand-700"
+                    >
+                      {site.phone.secondary}
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex gap-3.5">
+                  <Mail className="mt-0.5 size-5 shrink-0 text-brand-600" />
+                  <a
+                    href={`mailto:${site.email}`}
+                    className="break-all text-[15px] font-medium text-foreground transition-colors hover:text-brand-700"
+                  >
+                    {site.email}
+                  </a>
+                </div>
+
+                <div className="flex gap-3.5">
+                  <MapPin className="mt-0.5 size-5 shrink-0 text-brand-600" />
+                  <div>
+                    <p className="text-[15px] font-medium leading-relaxed text-foreground">
+                      {site.address.street}
+                      <br />
+                      {site.address.suburb} {site.address.state}{" "}
+                      {site.address.postcode}
+                    </p>
+                    <a
+                      href={directionsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1.5 inline-flex items-center gap-1 text-sm font-semibold text-brand-700"
+                    >
+                      Get directions
+                      <ArrowUpRight className="size-3.5" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 border-t border-black/8 pt-7">
+                <OpeningHours />
+              </div>
+
+              <div className="mt-8 rounded-xl border border-brand-200 bg-brand-50 p-4">
+                <p className="text-sm leading-relaxed text-brand-800">
+                  <span className="font-semibold">Not drivable? </span>
+                  Don&rsquo;t risk it. We quote off-site by appointment &mdash; give
+                  us a call and we&rsquo;ll come to the vehicle.
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-5">
-            <p className="text-sm leading-relaxed text-brand-800">
-              <span className="font-semibold">Good to know: </span>
-              {site.hoursNotes.join(" ")}
-            </p>
-          </div>
-        </Container>
-      </section>
-
-      {/* ---------- service area ---------- */}
-      <section className="bg-surface-2 py-14 lg:py-16">
-        <Container>
-          <ServiceAreaList />
-        </Container>
-      </section>
-
-      {/* ---------- form + map ---------- */}
-      <section className="bg-background py-16 lg:py-24">
-        <Container>
-          <div className="grid gap-14 lg:grid-cols-[1.1fr_0.9fr]">
+            {/* --- right: enquiry form --- */}
             <div>
               <SectionHeading
-                eyebrow="Send an enquiry"
-                title="Tell us what you need"
+                title="Make an enquiry"
                 description={
                   <>
                     After a repair quote? The{" "}
@@ -133,44 +176,23 @@ export default function ContactPage() {
                     >
                       quote form
                     </Link>{" "}
-                    lets you attach photos, which means a far more accurate answer.
+                    lets you attach photos of the damage, which means a far more
+                    accurate answer than we can give from a message alone.
                   </>
                 }
               />
-              <div className="mt-10">
+              <div className="mt-8">
                 <ContactForm />
               </div>
             </div>
-
-            <div className="lg:pt-4">
-              <div className="overflow-hidden rounded-2xl border border-black/8 bg-card">
-                <iframe
-                  title={`Map showing ${site.name} at ${site.address.full}`}
-                  src={mapSrc}
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="h-[380px] w-full border-0"
-                />
-                <div className="p-6">
-                  <p className="text-sm font-semibold text-foreground">
-                    {site.legalName}
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {site.address.full}
-                  </p>
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(site.address.mapsQuery)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700"
-                  >
-                    Get directions
-                    <span aria-hidden>→</span>
-                  </a>
-                </div>
-              </div>
-            </div>
           </div>
+        </Container>
+      </section>
+
+      {/* ---------- service area ---------- */}
+      <section className="border-t border-black/8 bg-surface-2 py-14 lg:py-16">
+        <Container>
+          <ServiceAreaList />
         </Container>
       </section>
     </>

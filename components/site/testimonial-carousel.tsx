@@ -49,12 +49,18 @@ export function TestimonialCarousel({
     <div className="relative">
       <div
         ref={railRef}
-        className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="-mx-6 flex snap-x snap-mandatory gap-5 overflow-x-auto px-6 pb-4 lg:-mx-12 lg:px-12 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{
+          maskImage:
+            "linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 3rem), transparent 100%)",
+          WebkitMaskImage:
+            "linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 3rem), transparent 100%)",
+        }}
       >
         {testimonials.map((testimonial) => (
           <article
             key={testimonial.author}
-            className="flex w-[300px] shrink-0 snap-start flex-col rounded-2xl border border-black/8 bg-card p-6 sm:w-[360px]"
+            className="flex w-[calc(100vw-4rem)] shrink-0 snap-start flex-col rounded-2xl border border-black/8 bg-card p-6 transition-shadow hover:shadow-md sm:w-[340px] lg:w-[360px]"
           >
             <Quote className="size-7 shrink-0 text-brand-500" />
             <blockquote className="mt-4 flex-1 text-[15px] leading-relaxed text-foreground">
@@ -67,17 +73,17 @@ export function TestimonialCarousel({
         ))}
       </div>
 
-      <div className="mt-2 flex gap-2">
+      <div className="mt-2 flex items-center gap-2">
         <button
           type="button"
           onClick={() => scrollBy(-1)}
           disabled={atStart}
           aria-label="Previous reviews"
           className={cn(
-            "inline-flex size-10 items-center justify-center rounded-full border border-black/10 transition-colors",
+            "inline-flex size-10 items-center justify-center rounded-full border transition-colors",
             atStart
-              ? "cursor-not-allowed text-muted-foreground/40"
-              : "text-foreground hover:bg-surface-2",
+              ? "cursor-not-allowed border-black/10 text-muted-foreground/40"
+              : "border-black/10 text-foreground hover:border-brand-500/50 hover:bg-surface-2",
           )}
         >
           <ChevronLeft className="size-4" />
@@ -88,14 +94,17 @@ export function TestimonialCarousel({
           disabled={atEnd}
           aria-label="More reviews"
           className={cn(
-            "inline-flex size-10 items-center justify-center rounded-full border border-black/10 transition-colors",
+            "inline-flex size-10 items-center justify-center rounded-full border transition-colors",
             atEnd
-              ? "cursor-not-allowed text-muted-foreground/40"
-              : "text-foreground hover:bg-surface-2",
+              ? "cursor-not-allowed border-black/10 text-muted-foreground/40"
+              : "border-black/10 text-foreground hover:border-brand-500/50 hover:bg-surface-2",
           )}
         >
           <ChevronRight className="size-4" />
         </button>
+        <span className="ml-1 text-xs text-muted-foreground">
+          {testimonials.length} reviews &mdash; swipe to read more
+        </span>
       </div>
     </div>
   );

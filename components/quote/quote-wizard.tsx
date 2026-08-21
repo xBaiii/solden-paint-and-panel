@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,10 +11,12 @@ import { cn } from "@/lib/utils";
 import { site } from "@/lib/site";
 import {
   QUOTE_STEPS,
+  SERVICE_DAMAGE_MAP,
   quoteDefaults,
   quoteSchema,
   type QuoteValues,
 } from "@/lib/quote-schema";
+import { serviceBySlug } from "@/content/services";
 import { STEP_COMPONENTS } from "@/components/quote/steps";
 import { captureAttribution, submitLead, type Attribution } from "@/lib/leads";
 
@@ -23,6 +26,10 @@ export function QuoteWizard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const serviceSlug = searchParams.get("service") ?? undefined;
+  const service = serviceSlug === undefined ? undefined : serviceBySlug(serviceSlug);
+  /** Damage types implied by the service page the visitor came from. */
+  const prefilled =
+    serviceSlug === undefined ? [] : (SERVICE_DAMAGE_MAP[serviceSlug] ?? []);
 
   const [stepIndex, setStepIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -33,7 +40,7 @@ export function QuoteWizard() {
 
   const form = useForm<QuoteValues>({
     resolver: zodResolver(quoteSchema),
-    defaultValues: quoteDefaults,
+    defaultValues: { ...quoteDefaults, damageTypes: prefilled },
     mode: "onTouched",
   });
 
@@ -43,6 +50,19 @@ export function QuoteWizard() {
     startedAt.current = Date.now();
   }, []);
 
+  // Someone who clicked "Get a free quote" on a service page has already
+  // decided — put them on the form rather than at the top of the hero.
+  useEffect(() => {
+    if (serviceSlug === undefined) return;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    topRef.current?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  }, [serviceSlug]);
+
   // Restore a draft so an accidental refresh doesn't lose four steps of typing.
   // Photo ids are dropped deliberately: the previews are gone, so showing them
   // as attached would be misleading.
@@ -51,7 +71,17 @@ export function QuoteWizard() {
       const saved = sessionStorage.getItem(DRAFT_KEY);
       if (saved === null) return;
       const parsed = JSON.parse(saved) as Partial<QuoteValues>;
-      form.reset({ ...quoteDefaults, ...parsed, photoIds: [] });
+      form.reset({
+        ...quoteDefaults,
+        ...parsed,
+        // A saved draft shouldn't override what the visitor just clicked on a
+        // service page, but it shouldn't lose their own choices either.
+        damageTypes:
+          parsed.damageTypes !== undefined && parsed.damageTypes.length > 0
+            ? parsed.damageTypes
+            : prefilled,
+        photoIds: [],
+      });
     } catch {
       // A malformed draft is not worth surfacing — just start fresh.
       sessionStorage.removeItem(DRAFT_KEY);
@@ -226,6 +256,21 @@ export function QuoteWizard() {
           noValidate
         >
           <div className="rounded-2xl border border-black/8 bg-card p-6 sm:p-9">
+            {service !== undefined && stepIndex === 0 && (
+              <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3">
+                <Check className="size-4 shrink-0 text-brand-700" />
+                <span className="text-sm text-brand-900">
+                  Enquiring about{" "}
+                  <span className="font-semibold">{service.name}</span>
+                </span>
+                <Link
+                  href="/quote"
+                  className="ml-auto text-xs font-semibold text-brand-800 underline underline-offset-2"
+                >
+                  Change
+                </Link>
+              </div>
+            )}
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
               {step.title}
             </h2>
