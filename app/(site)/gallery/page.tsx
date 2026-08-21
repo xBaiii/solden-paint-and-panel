@@ -32,7 +32,7 @@ export default function GalleryPage() {
         breadcrumbs={breadcrumbs}
       />
 
-      <section className="bg-background py-16 lg:py-20">
+      <section className="cv-auto bg-background py-16 lg:py-20">
         <Container>
           <GalleryGrid images={galleryImages} />
         </Container>

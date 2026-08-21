@@ -40,11 +40,18 @@ export function Eyebrow({
   return (
     <p
       className={cn(
-        "text-xs font-semibold uppercase tracking-[0.14em]",
+        "flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.14em]",
         tone === "dark" ? "text-brand-neon" : "text-brand-600",
         className,
       )}
     >
+      <span
+        aria-hidden
+        className={cn(
+          "h-px w-6 shrink-0",
+          tone === "dark" ? "bg-brand-neon/50" : "bg-brand-600/40",
+        )}
+      />
       {children}
     </p>
   );
@@ -72,7 +79,16 @@ export function SectionHeading({
         className,
       )}
     >
-      {eyebrow !== undefined && <Eyebrow tone={tone}>{eyebrow}</Eyebrow>}
+      {eyebrow !== undefined && (
+        <Eyebrow
+          tone={tone}
+          // The eyebrow's accent rule makes it a flex row, so centring the
+          // parent text isn't enough — the row needs centring too.
+          className={align === "center" ? "justify-center" : undefined}
+        >
+          {eyebrow}
+        </Eyebrow>
+      )}
       <h2
         className={cn(
           "mt-3 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]",

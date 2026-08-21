@@ -189,14 +189,6 @@
 }
 
 @layer base {
-  /* Let the browser skip layout/paint work for off-screen section bands.
-     `auto` (not `hidden`) keeps content searchable and accessible. */
-  section {
-    content-visibility: auto;
-    /* Rough height hint so skipped sections don't collapse the scrollbar. */
-    contain-intrinsic-size: auto 600px;
-  }
-
   /* Headline treatment: tight tracking, balanced wrapping. */
   h1,
   h2,
@@ -207,9 +199,50 @@
   p {
     text-wrap: pretty;
   }
+
+  /* Brand-tinted text selection. */
+  ::selection {
+    background-color: color-mix(in oklab, var(--brand-500) 28%, transparent);
+    color: var(--ink-950);
+  }
+
+  /* One visible focus ring for keyboard users, everywhere. */
+  :focus-visible {
+    outline: 2px solid var(--brand-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Anchored headings clear the fixed header. */
+    scroll-padding-top: 6rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  /* Stop iOS zooming when a form field is focused. */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
 }
 
 @layer utilities {
+  /* Skip layout/paint for long off-screen sections.
+     NOT applied to every <section>: content-visibility implies
+     `contain: layout paint`, which creates a containing block and breaks
+     `position: sticky` on descendants — the service-detail and contact pages
+     both rely on sticky sidebars. Only use this on long, flat sections. */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 700px;
+  }
+
   /* Scroll-reveal — paired with the useReveal hook. No animation library.
      Only opacity and transform are animated, so it stays on the compositor. */
   .reveal {

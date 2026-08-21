@@ -32,7 +32,7 @@ export default function TestimonialsPage() {
         breadcrumbs={breadcrumbs}
       />
 
-      <section className="bg-background py-16 lg:py-24">
+      <section className="cv-auto bg-background py-16 lg:py-24">
         <Container>
           {/* Grid, not `columns` — see the note in the commit. Multi-column
               layout re-flows on every transform change, which made this page

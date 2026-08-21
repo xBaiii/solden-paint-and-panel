@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { site } from "@/lib/site";
 
@@ -13,7 +13,6 @@ import { site } from "@/lib/site";
  *
  * Everything is computed in Australia/Brisbane, not the visitor's timezone — the
  * shop is open when the shop is open, regardless of where you're browsing from.
- * The initial render shows no highlight so the static HTML matches hydration.
  */
 
 const DAYS = [
@@ -26,8 +25,20 @@ const DAYS = [
   { label: "Sunday", hours: "Closed", open: null },
 ];
 
-/** Brisbane has no daylight saving, so a fixed UTC+10 offset is safe. */
-function brisbaneNow(): { dayIndex: number; hour: number; minute: number } {
+/**
+ * The clock is external state, so it's read through useSyncExternalStore rather
+ * than mirrored into state from an effect.
+ *
+ * The snapshot is a *string* ("Monday|14|05"), not an object: getSnapshot must
+ * return a referentially stable value while nothing has changed, and a fresh
+ * object every call would send React into an infinite re-render loop.
+ */
+function subscribe(onChange: () => void) {
+  const timer = setInterval(onChange, 60_000);
+  return () => clearInterval(timer);
+}
+
+function getSnapshot(): string {
   const parts = new Intl.DateTimeFormat("en-AU", {
     timeZone: "Australia/Brisbane",
     weekday: "long",
@@ -35,34 +46,31 @@ function brisbaneNow(): { dayIndex: number; hour: number; minute: number } {
     minute: "numeric",
     hour12: false,
   }).formatToParts(new Date());
-
-  const weekday = parts.find((part) => part.type === "weekday")?.value ?? "";
-  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? "0");
-  const minute = Number(parts.find((part) => part.type === "minute")?.value ?? "0");
-  return {
-    dayIndex: DAYS.findIndex((day) => day.label === weekday),
-    hour,
-    minute,
-  };
+  const get = (type: string) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+  return `${get("weekday")}|${get("hour")}|${get("minute")}`;
 }
 
+/** No clock on the server — render without a highlight so hydration matches. */
+const getServerSnapshot = () => "";
+
 export function OpeningHours() {
-  const [now, setNow] = useState<ReturnType<typeof brisbaneNow> | null>(null);
+  const snapshot = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot,
+  );
 
-  useEffect(() => {
-    setNow(brisbaneNow());
-    // Re-check on the hour so a page left open doesn't go stale.
-    const timer = setInterval(() => setNow(brisbaneNow()), 60_000);
-    return () => clearInterval(timer);
-  }, []);
+  const [weekday, hourText, minuteText] = snapshot.split("|");
+  const today = DAYS.findIndex((day) => day.label === weekday);
+  const known = snapshot.length > 0 && today >= 0;
 
-  const today = now === null ? -1 : now.dayIndex;
-  const todayHours = today >= 0 ? DAYS[today].open : null;
+  const todayHours = known ? DAYS[today].open : null;
+  const decimalHour = Number(hourText) + Number(minuteText) / 60;
   const isOpen =
-    now !== null &&
     todayHours !== null &&
-    now.hour + now.minute / 60 >= todayHours[0] &&
-    now.hour + now.minute / 60 < todayHours[1];
+    decimalHour >= todayHours[0] &&
+    decimalHour < todayHours[1];
 
   return (
     <div>
@@ -70,7 +78,7 @@ export function OpeningHours() {
         <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-muted-foreground">
           Opening hours
         </h3>
-        {now !== null && (
+        {known && (
           <span
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
@@ -92,13 +100,15 @@ export function OpeningHours() {
 
       <dl className="mt-4 space-y-0.5">
         {DAYS.map((day, index) => {
-          const current = index === today;
+          const current = known && index === today;
           return (
             <div
               key={day.label}
               className={cn(
                 "flex items-baseline justify-between gap-4 rounded-md px-2.5 py-1.5 text-sm",
-                current ? "bg-brand-50 font-semibold text-brand-900" : "text-foreground",
+                current
+                  ? "bg-brand-50 font-semibold text-brand-900"
+                  : "text-foreground",
               )}
             >
               <dt className={current ? undefined : "text-muted-foreground"}>

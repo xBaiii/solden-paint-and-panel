@@ -122,9 +122,13 @@ export default function HomePage() {
           fill
           priority
           sizes="100vw"
-          className="object-cover opacity-40"
+          className="object-cover object-center opacity-70"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-ink-950 via-ink-950/85 to-ink-950/60" />
+        {/* Directional scrim rather than a flat wash: heavy behind the copy on
+            the left, light on the right so the workshop is actually visible.
+            At a flat opacity-40 the photo read as almost black. */}
+        <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/85 to-ink-950/35" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-transparent to-ink-950/40" />
         <div
           aria-hidden
           className="pointer-events-none absolute -right-40 top-10 size-[560px] rounded-full bg-brand-600/15 blur-3xl"
@@ -243,6 +247,38 @@ export default function HomePage() {
                 </div>
               </Reveal>
             ))}
+          </div>
+
+          {/* Typographic credentials strip. No logo lockups: we only hold the
+              MTA mark, and rendering brand names as fake logos would be worse
+              than setting them as type. Every item here is verified. */}
+          <div className="mt-14 border-t border-black/8 pt-10">
+            <dl className="grid gap-8 sm:grid-cols-3">
+              {[
+                {
+                  value: "30+",
+                  label: "Years family owned and operated in Brendale",
+                },
+                {
+                  value: "Sikkens",
+                  label:
+                    "Akzo Nobel computerised premium waterborne refinishing system",
+                },
+                {
+                  value: "MTAQ",
+                  label: "Motor Trades Association Queensland member",
+                },
+              ].map((stat) => (
+                <div key={stat.value}>
+                  <dt className="text-3xl font-semibold tracking-tight text-brand-700">
+                    {stat.value}
+                  </dt>
+                  <dd className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                    {stat.label}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </Container>
       </section>
