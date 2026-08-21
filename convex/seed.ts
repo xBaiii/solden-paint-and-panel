@@ -279,3 +279,73 @@ export const clearRateLimits = internalMutation({
     return { cleared: rows.length };
   },
 });
+
+/**
+ * Deletes every lead and its events, inserting nothing. Run this once before
+ * the shop starts using the dashboard for real, to clear the sample data:
+ *   npx convex run seed:clearLeads '{"confirm":"DELETE"}' --prod
+ */
+export const clearLeads = internalMutation({
+  args: { confirm: v.string() },
+  returns: v.object({ deleted: v.number() }),
+  handler: async (ctx, { confirm }) => {
+    if (confirm !== "DELETE") {
+      throw new Error(
+        'Pass {"confirm":"DELETE"} — this permanently removes every lead.',
+      );
+    }
+    let deleted = 0;
+    for (const archived of [false, true]) {
+      const leads = await ctx.db
+        .query("leads")
+        .withIndex("by_archived_and_status", (q) => q.eq("archived", archived))
+        .collect();
+      for (const lead of leads) {
+        const events = await ctx.db
+          .query("leadEvents")
+          .withIndex("by_lead", (q) => q.eq("leadId", lead._id))
+          .collect();
+        for (const event of events) await ctx.db.delete(event._id);
+        await ctx.db.delete(lead._id);
+        deleted += 1;
+      }
+    }
+    console.log(`[seed] cleared ${deleted} lead(s).`);
+    return { deleted };
+  },
+});
+
+/**
+ * Wipes all accounts and sessions, so the next sign-up becomes the owner again.
+ * Development only — never run this against production with real staff accounts.
+ *   npx convex run seed:clearUsers '{"confirm":"DELETE"}'
+ */
+export const clearUsers = internalMutation({
+  args: { confirm: v.string() },
+  returns: v.object({ deleted: v.record(v.string(), v.number()) }),
+  handler: async (ctx, { confirm }) => {
+    if (confirm !== "DELETE") {
+      throw new Error(
+        'Pass {"confirm":"DELETE"} — this removes every account and session.',
+      );
+    }
+    const tables = [
+      "users",
+      "authAccounts",
+      "authSessions",
+      "authRefreshTokens",
+      "authVerificationCodes",
+      "authVerifiers",
+      "authRateLimits",
+      "invites",
+    ] as const;
+
+    const deleted: Record<string, number> = {};
+    for (const table of tables) {
+      const rows = await ctx.db.query(table).take(500);
+      for (const row of rows) await ctx.db.delete(row._id);
+      deleted[table] = rows.length;
+    }
+    return { deleted };
+  },
+});

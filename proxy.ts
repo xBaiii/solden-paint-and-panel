@@ -40,7 +40,19 @@ export default proxy;
  * Paths are listed explicitly rather than as a negative-lookahead regex: the
  * regex form is easy to get subtly wrong (a lost backslash silently matches
  * everything or nothing), and this is a security-adjacent control.
+ *
+ * `/api/auth` is REQUIRED and is not optional scoping: signIn/signUp POST there
+ * from the browser, and convexAuthNextjsMiddleware is what proxies that call
+ * through to Convex and sets the session cookies. There is no route handler
+ * file behind it — if the proxy doesn't run for this path, authentication
+ * silently fails with nothing written to the database.
  */
 export const config = {
-  matcher: ["/dashboard", "/dashboard/:path*", "/sign-in"],
+  matcher: [
+    "/api/auth",
+    "/api/auth/:path*",
+    "/dashboard",
+    "/dashboard/:path*",
+    "/sign-in",
+  ],
 };

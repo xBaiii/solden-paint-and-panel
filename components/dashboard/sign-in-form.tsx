@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { ConvexError } from "convex/values";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,38 @@ export function SignInForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Our own checks throw ConvexError, whose `data` reaches the browser intact.
+   * Anything else is either Convex Auth's deliberately vague bad-credentials
+   * error or a genuine fault, and the message is redacted in production — so
+   * never dress an unknown failure up as a specific cause.
+   */
+  const describe = (caught: unknown): string => {
+    if (caught instanceof ConvexError) {
+      const data = caught.data;
+      if (typeof data === "string" && data.length > 0) return data;
+    }
+    const raw = caught instanceof Error ? caught.message : "";
+    if (raw.includes("InvalidAccountId") || raw.includes("InvalidSecret")) {
+      return "That email address and password don't match an account.";
+    }
+    // Fallback for environments where the ConvexError instance doesn't survive
+    // the client boundary: the thrown message is still embedded in the string.
+    for (const known of [
+      "has not been invited",
+      "has been deactivated",
+      "email address is required",
+    ]) {
+      const at = raw.indexOf(known);
+      if (at === -1) continue;
+      const sentence = raw.slice(raw.lastIndexOf(":", at) + 1).trim();
+      return sentence.length > 0 ? sentence.split("\n")[0] : raw;
+    }
+    return mode === "signUp"
+      ? "We couldn't create that account. If you already have one, sign in instead — otherwise contact your administrator."
+      : "That email address and password don't match an account.";
+  };
+
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -38,20 +71,10 @@ export function SignInForm() {
       await signIn("password", formData);
       router.push("/dashboard");
     } catch (caught) {
-      // Convex Auth returns a deliberately vague error for bad credentials.
-      // Anything else (an invite rejection, a deactivated account) carries a
-      // useful message that we should show verbatim.
-      const raw = caught instanceof Error ? caught.message : "";
-      const friendly = raw.includes("InvalidAccountId")
-        ? "That email address and password don't match an account."
-        : raw.includes("not been invited")
-          ? "That email address hasn't been invited. Ask an administrator for an invite."
-          : raw.includes("deactivated")
-            ? "This account has been deactivated."
-            : mode === "signUp"
-              ? "We couldn't create that account. It may already exist."
-              : "That email address and password don't match an account.";
-      setError(friendly);
+      // Surfaced in the console too: the on-screen copy is intentionally
+      // non-specific for unknown failures, which makes debugging harder.
+      console.error("[sign-in] failed", caught);
+      setError(describe(caught));
       setSubmitting(false);
     }
   };

@@ -1,3 +1,4 @@
+import { ConvexError } from "convex/values";
 import { convexAuth } from "@convex-dev/auth/server";
 import { Password } from "@convex-dev/auth/providers/Password";
 import type { MutationCtx } from "./_generated/server";
@@ -6,13 +7,33 @@ import { ADMIN_ROLES, type UserRole } from "./lib/constants";
 /**
  * Email + password auth for the internal dashboard.
  *
+ * Errors here are ConvexError, not Error. Convex redacts plain Error messages
+ * from public functions in production ("Server Error"), so a plain throw would
+ * leave the sign-in form unable to tell "not invited" from "wrong password".
+ *
  * Signup is invite-only: the first account ever created becomes the owner, and
  * every account after that must have an unconsumed, unexpired invite matching
  * its email address. This runs server-side in a callback, so a client cannot
  * skip it or nominate its own role.
  */
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
-  providers: [Password({ id: "password" })],
+  providers: [
+    Password({
+      id: "password",
+      /**
+       * The default `profile` maps only `email`, which silently discarded the
+       * name the sign-up form collects — leaving the dashboard showing an email
+       * address instead of the person.
+       */
+      profile(params) {
+        const email = String(params.email ?? "").toLowerCase();
+        const name = typeof params.name === "string" ? params.name.trim() : "";
+        // `undefined` is not a Convex value, so the key is omitted rather than
+        // set to undefined when no name was supplied.
+        return { email, ...(name.length > 0 ? { name } : {}) };
+      },
+    }),
+  ],
 
   callbacks: {
     async afterUserCreatedOrUpdated(baseCtx, { userId, existingUserId, profile }) {
@@ -32,7 +53,9 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       }
 
       if (email === null) {
-        throw new Error("An email address is required to create an account.");
+        throw new ConvexError(
+          "An email address is required to create an account.",
+        );
       }
 
       const invite = await ctx.db
@@ -48,7 +71,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       ) {
         // Roll the half-created user back so a rejected signup leaves no trace.
         await ctx.db.delete(userId);
-        throw new Error(
+        throw new ConvexError(
           "That email address has not been invited. Ask an administrator for an invite.",
         );
       }
@@ -64,10 +87,10 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     async beforeSessionCreation(baseCtx, { userId }) {
       const ctx = baseCtx as unknown as MutationCtx;
       const user = await ctx.db.get(userId);
-      if (user === null) throw new Error("Account not found.");
+      if (user === null) throw new ConvexError("Account not found.");
       // `active` is only ever explicitly false for a deactivated account.
       if (user.active === false) {
-        throw new Error("This account has been deactivated.");
+        throw new ConvexError("This account has been deactivated.");
       }
     },
   },

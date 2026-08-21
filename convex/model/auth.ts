@@ -1,5 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { ConvexError } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ADMIN_ROLES, type UserRole } from "../lib/constants";
 
@@ -25,7 +26,7 @@ export async function requireUser(
 ): Promise<Doc<"users">> {
   const user = await getCurrentUser(ctx);
   if (user === null) {
-    throw new Error("Not signed in.");
+    throw new ConvexError("Not signed in.");
   }
   return user;
 }
@@ -37,7 +38,7 @@ export async function requireRole(
 ): Promise<Doc<"users">> {
   const user = await requireUser(ctx);
   if (user.role === undefined || !roles.includes(user.role)) {
-    throw new Error("You don't have permission to do that.");
+    throw new ConvexError("You don't have permission to do that.");
   }
   return user;
 }
