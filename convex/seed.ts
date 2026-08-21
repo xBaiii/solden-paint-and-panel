@@ -268,3 +268,14 @@ export const reset = internalMutation({
     return { deleted, inserted };
   },
 });
+
+/** Clears the anonymous rate-limit counters. Dev convenience for testing. */
+export const clearRateLimits = internalMutation({
+  args: {},
+  returns: v.object({ cleared: v.number() }),
+  handler: async (ctx) => {
+    const rows = await ctx.db.query("rateLimits").take(1000);
+    for (const row of rows) await ctx.db.delete(row._id);
+    return { cleared: rows.length };
+  },
+});
