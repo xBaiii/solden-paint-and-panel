@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Raw source photos pulled from the old Wix site. Reproducible from
+# raw-images/urls.txt, so the originals and contact sheets stay out of git.
+raw-images/src-*
+raw-images/sheet-*
+
+# Convex agent skills — regenerate with `npx convex ai-files install`.
+.agents/skills/
+.claude/skills/
