@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ChevronDown, Menu, Phone, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mainNav } from "@/lib/nav";
@@ -18,29 +18,46 @@ import { site } from "@/lib/site";
  * the image until scroll). `variant="solid"` starts in the pill state, for pages
  * with a light header area where white-on-white would be invisible.
  */
+/**
+ * Scroll position is external state, so it is read through
+ * useSyncExternalStore rather than mirrored into React state via an effect.
+ * That also means the very first render already knows the correct value when
+ * the page loads part-way down (back navigation, or an #anchor).
+ */
+function subscribeToScroll(onChange: () => void) {
+  window.addEventListener("scroll", onChange, { passive: true });
+  return () => window.removeEventListener("scroll", onChange);
+}
+
+const getScrolled = () => window.scrollY > 20;
+/** The server has no scroll position; the hero always starts at the top. */
+const getScrolledOnServer = () => false;
+
 export function SiteHeader({
   variant = "overlay",
 }: {
   variant?: "overlay" | "solid";
 }) {
-  const [scrolled, setScrolled] = useState(false);
+  const scrolled = useSyncExternalStore(
+    subscribeToScroll,
+    getScrolled,
+    getScrolledOnServer,
+  );
   const [menuOpen, setMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const pathname = usePathname();
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    onScroll(); // the page may load already scrolled (back navigation, anchors)
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Close everything on navigation.
-  useEffect(() => {
+  // Close the menus whenever the route changes. This is React's documented
+  // "adjust state when a prop changes" pattern — setting state during render
+  // rather than in an effect, so there is no extra commit and no flash of an
+  // open menu over the new page.
+  const [lastPath, setLastPath] = useState(pathname);
+  if (lastPath !== pathname) {
+    setLastPath(pathname);
     setMenuOpen(false);
     setServicesOpen(false);
-  }, [pathname]);
+  }
 
   // Lock body scroll behind the mobile overlay.
   useEffect(() => {
@@ -65,16 +82,16 @@ export function SiteHeader({
   /** Dark-on-light link colours apply whenever the pill background is showing. */
   const onLight = piled;
 
-  const services = mainNav.find((item) => item.children !== undefined);
-
-  const openServices = () => {
+  const openServices = useCallback(() => {
     if (closeTimer.current !== null) clearTimeout(closeTimer.current);
     setServicesOpen(true);
-  };
-  const scheduleCloseServices = () => {
+  }, []);
+
+  // Small delay so the pointer can cross the gap between trigger and flyout.
+  const scheduleCloseServices = useCallback(() => {
     if (closeTimer.current !== null) clearTimeout(closeTimer.current);
     closeTimer.current = setTimeout(() => setServicesOpen(false), 120);
-  };
+  }, []);
 
   return (
     <header

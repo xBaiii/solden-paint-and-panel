@@ -17,7 +17,9 @@ export const site = {
   phone: {
     primary: "(07) 3205 2988",
     secondary: "(07) 3205 2212",
-    /** E.164 for tel: links and schema. */
+    /** E.164 for tel: links and structured data. */
+    primaryE164: "+61732052988",
+    secondaryE164: "+61732052212",
     primaryHref: "tel:+61732052988",
     secondaryHref: "tel:+61732052212",
   },
@@ -58,6 +60,37 @@ export const site = {
     "Full repair warranty",
   ],
 } as const;
+
+/**
+ * Suburbs a Brendale workshop realistically draws from, used for the service-area
+ * section and schema.org `areaServed`.
+ *
+ * These are geographic facts about the shop's catchment, not business claims —
+ * but note the framing is always "we service", never "we are located in".
+ */
+export const serviceAreas = [
+  "Brendale",
+  "Strathpine",
+  "Bray Park",
+  "Warner",
+  "Albany Creek",
+  "Eatons Hill",
+  "Cashmere",
+  "Kallangur",
+  "Petrie",
+  "Lawnton",
+  "North Lakes",
+  "Aspley",
+  "Chermside",
+  "Everton Park",
+  "Mitchelton",
+  "Ferny Hills",
+  "Samford",
+  "Dayboro",
+] as const;
+
+/** Broader regions, for copy that shouldn't list 18 suburbs. */
+export const serviceRegions = ["North Brisbane", "Moreton Bay"] as const;
 
 export const openingHoursSpecification = [
   {

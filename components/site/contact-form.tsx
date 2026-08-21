@@ -20,7 +20,8 @@ export function ContactForm() {
   const [preferredContact, setPreferredContact] = useState("phone");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const attribution = useRef<Attribution>({});
-  const startedAt = useRef(Date.now());
+  // Stamped on mount, not during render — Date.now() in render is impure.
+  const startedAt = useRef(0);
 
   useEffect(() => {
     attribution.current = captureAttribution();

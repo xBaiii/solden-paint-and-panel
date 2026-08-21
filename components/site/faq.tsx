@@ -59,6 +59,11 @@ export const generalFaqs: ServiceFaq[] = [
       "No. Our spray booth is extra large, so we take trucks, buses, caravans, boats and commercial vehicles as well as cars and motorbikes.",
   },
   {
+    question: "Which suburbs do you service?",
+    answer:
+      "Our workshop is at 6 Aldinga Street, Brendale, and we regularly repair vehicles for customers right across north Brisbane and the Moreton Bay region — Strathpine, Bray Park, Warner, Albany Creek, Eatons Hill, Cashmere, Kallangur, Petrie, Lawnton, North Lakes and the surrounding suburbs. If you're further out, call us anyway and we'll let you know.",
+  },
+  {
     question: "How much will my repair cost?",
     answer:
       "It depends entirely on the damage, so we quote each job properly rather than guessing. Quotes are free — pop in with your vehicle, or send photos and details through our quote form and we'll come back to you.",

@@ -32,10 +32,10 @@ export const metadata: Metadata = {
   // `absolute` opts out of the root layout's "%s | Solden Paint & Panel"
   // template, which would otherwise append the brand name twice.
   title: {
-    absolute: "Smash repairs & spray painting in Brendale | Solden Paint & Panel",
+    absolute: "Smash Repairs & Spray Painting Brendale | Solden Paint & Panel",
   },
   description:
-    "Family owned smash repairs, spray painting and refinishing in Brendale for over 30 years. Approved repairer for all major insurers with choice of repairer policies. Free quotes.",
+    "Family owned smash repairs and spray painting in Brendale for over 30 years, serving north Brisbane. All major insurers. Free quotes.",
   alternates: { canonical: "/" },
 };
 

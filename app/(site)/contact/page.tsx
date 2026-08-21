@@ -4,12 +4,13 @@ import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { Container, SectionHeading } from "@/components/site/section";
 import { PageHero } from "@/components/site/page-hero";
 import { ContactForm } from "@/components/site/contact-form";
+import { ServiceAreaList } from "@/components/site/service-area-note";
 import { BreadcrumbJsonLd } from "@/components/site/json-ld";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Contact us",
-  description: `Solden Paint & Panel, ${site.address.full}. Call ${site.phone.primary} or send an enquiry. Open ${site.hours[0].time} Monday to Friday, Saturdays by appointment.`,
+  title: "Contact Us — Brendale Workshop",
+  description: `${site.address.full}. Call ${site.phone.primary} for smash repairs and spray painting. Open 8:00am–4:00pm Monday to Friday.`,
   alternates: { canonical: "/contact" },
 };
 
@@ -108,8 +109,15 @@ export default function ContactPage() {
         </Container>
       </section>
 
+      {/* ---------- service area ---------- */}
+      <section className="bg-surface-2 py-14 lg:py-16">
+        <Container>
+          <ServiceAreaList />
+        </Container>
+      </section>
+
       {/* ---------- form + map ---------- */}
-      <section className="bg-surface-2 py-16 lg:py-24">
+      <section className="bg-background py-16 lg:py-24">
         <Container>
           <div className="grid gap-14 lg:grid-cols-[1.1fr_0.9fr]">
             <div>

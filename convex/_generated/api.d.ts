@@ -18,6 +18,7 @@ import type * as lib_validators from "../lib/validators.js";
 import type * as model_auth from "../model/auth.js";
 import type * as model_leads from "../model/leads.js";
 import type * as notifications from "../notifications.js";
+import type * as seed from "../seed.js";
 import type * as users from "../users.js";
 
 import type {
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   "model/auth": typeof model_auth;
   "model/leads": typeof model_leads;
   notifications: typeof notifications;
+  seed: typeof seed;
   users: typeof users;
 }>;
 

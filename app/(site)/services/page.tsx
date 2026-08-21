@@ -8,9 +8,9 @@ import { BreadcrumbJsonLd } from "@/components/site/json-ld";
 import { additionalServices, hoodLiningsNote, services } from "@/content/services";
 
 export const metadata: Metadata = {
-  title: "Our services",
+  title: "Panel & Paint Services in Brendale",
   description:
-    "Smash repairs, spray painting, paintless dent removal, truck and commercial work, Raptor protection liners, custom paint, glass, detailing and more — all under one roof in Brendale.",
+    "Smash repairs, resprays, dent removal, truck and commercial work and more — one Brendale workshop serving north Brisbane. Free quotes.",
   alternates: { canonical: "/services" },
 };
 

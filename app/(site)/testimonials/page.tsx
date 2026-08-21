@@ -7,9 +7,9 @@ import { BreadcrumbJsonLd } from "@/components/site/json-ld";
 import { testimonials } from "@/content/testimonials";
 
 export const metadata: Metadata = {
-  title: "Reviews",
+  title: "Customer Reviews",
   description:
-    "What Solden Paint & Panel customers say about their repairs, published exactly as written.",
+    "What our Brendale and north Brisbane customers say about their repairs — published exactly as they wrote them.",
   alternates: { canonical: "/testimonials" },
 };
 

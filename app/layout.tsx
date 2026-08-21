@@ -22,8 +22,9 @@ export const metadata: Metadata = {
     default: `${site.name} — Smash repairs & spray painting, Brendale`,
     template: `%s | ${site.name}`,
   },
+  // Kept under 155 characters so it isn't truncated in results.
   description:
-    "Family owned smash repairs and spray painting in Brendale for over 30 years. Approved repairer for all major insurers with choice of repairer policies. Free quotes.",
+    "Family owned smash repairs & spray painting in Brendale, serving north Brisbane. Approved for all major insurers. Free quotes.",
   openGraph: {
     type: "website",
     locale: "en_AU",

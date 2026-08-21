@@ -6,6 +6,9 @@ import { useEffect, useRef, useState } from "react";
  * Adds the `reveal-in` class the first time an element scrolls into view.
  * Paired with the `.reveal` utility in globals.css — no animation library, and
  * it respects prefers-reduced-motion via the CSS rather than in JS.
+ *
+ * No IntersectionObserver fallback: Next.js 16 already requires Chrome 111+ /
+ * Safari 16.4+, which all support it.
  */
 export function useReveal<T extends HTMLElement = HTMLDivElement>(
   options: { threshold?: number; rootMargin?: string } = {},
@@ -16,12 +19,6 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(
   useEffect(() => {
     const element = ref.current;
     if (element === null || revealed) return;
-
-    // No IntersectionObserver (or SSR hydration edge cases): just show it.
-    if (typeof IntersectionObserver === "undefined") {
-      setRevealed(true);
-      return;
-    }
 
     const observer = new IntersectionObserver(
       (entries) => {

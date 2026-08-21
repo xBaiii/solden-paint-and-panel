@@ -8,9 +8,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Get a free quote",
+  title: "Get a Free Repair Quote",
   description:
-    "Send us photos and details of the damage and we'll come back to you with a free quote. Insurance claims welcome — we handle the insurer and the paperwork.",
+    "Send photos of the damage for a free quote from our Brendale workshop. We handle the insurer and the paperwork on choice-of-repairer claims.",
   alternates: { canonical: "/quote" },
 };
 

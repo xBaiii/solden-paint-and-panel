@@ -8,9 +8,9 @@ import { BreadcrumbJsonLd } from "@/components/site/json-ld";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "About us",
+  title: "About Us — Family Owned in Brendale",
   description:
-    "Solden Paint & Panel has been family owned and operated in Brendale for over 30 years. Managing director Michael Curtin personally approves every stage of every repair.",
+    "Family owned and operated in Brendale for over 30 years. Managing director Michael Curtin personally approves every stage of every repair.",
   alternates: { canonical: "/about" },
 };
 

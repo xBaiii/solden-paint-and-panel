@@ -7,9 +7,9 @@ import { BreadcrumbJsonLd } from "@/components/site/json-ld";
 import { galleryImages } from "@/content/gallery";
 
 export const metadata: Metadata = {
-  title: "Gallery",
+  title: "Repair Gallery — Our Work in Brendale",
   description:
-    "Smash repairs, resprays, colour changes, motorbikes, trucks, protection liners and wheels — real jobs photographed at our Brendale workshop.",
+    "Smash repairs, resprays, colour changes, motorbikes, trucks and protection liners — real jobs photographed at our Brendale workshop.",
   alternates: { canonical: "/gallery" },
 };
 

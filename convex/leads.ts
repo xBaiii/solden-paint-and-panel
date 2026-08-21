@@ -220,7 +220,8 @@ export const stats = query({
     completedThisMonth: v.number(),
     claims: v.number(),
     bySource: v.record(v.string(), v.number()),
-    byDay: v.record(v.string(), v.number()),
+    /** Zero-filled 30-day series, built here so the client does no date math. */
+    series: v.array(v.object({ date: v.string(), leads: v.number() })),
   }),
   handler: async (ctx) => {
     await requireUser(ctx);
@@ -245,6 +246,15 @@ export const stats = query({
       }
     }
 
+    // Zero-fill the window so the chart never implies activity that isn't there.
+    const series: { date: string; leads: number }[] = [];
+    for (let offset = 29; offset >= 0; offset -= 1) {
+      const day = new Date(now - offset * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
+      series.push({ date: day, leads: byDay[day] ?? 0 });
+    }
+
     return {
       total: leads.length,
       newThisWeek: leads.filter((l) => l._creationTime >= weekAgo).length,
@@ -257,7 +267,7 @@ export const stats = query({
       ).length,
       claims: leads.filter((l) => l.isClaim).length,
       bySource,
-      byDay,
+      series,
     };
   },
 });

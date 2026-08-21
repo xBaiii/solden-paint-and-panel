@@ -27,7 +27,8 @@ export function QuoteWizard() {
   const [stepIndex, setStepIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const attribution = useRef<Attribution>({});
-  const startedAt = useRef<number>(Date.now());
+  // Stamped on mount, not during render — Date.now() in render is impure.
+  const startedAt = useRef<number>(0);
   const topRef = useRef<HTMLDivElement>(null);
 
   const form = useForm<QuoteValues>({

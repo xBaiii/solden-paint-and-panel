@@ -14,7 +14,9 @@ import {
   ServiceJsonLd,
 } from "@/components/site/json-ld";
 import { serviceBySlug, services } from "@/content/services";
+import { ServiceAreaNote } from "@/components/site/service-area-note";
 import { site } from "@/lib/site";
+import { clamp } from "@/lib/seo";
 
 /** Pre-render every service page at build time. */
 export function generateStaticParams() {
@@ -27,13 +29,23 @@ export async function generateMetadata({
   const { slug } = await params;
   const service = serviceBySlug(slug);
   if (service === undefined) return {};
+  // Titles and descriptions carry the location: "smash repairs Brendale" and
+  // "panel beater north Brisbane" are the searches that actually convert.
+  // `shortName` keeps the title inside 60 characters even for the longest
+  // service ("Auto electrical, mechanical & air conditioning"), and `absolute`
+  // opts out of the layout template so the brand isn't appended twice.
+  const title = `${service.shortName} in Brendale | ${site.shortName} Paint & Panel`;
+  const description = clamp(
+    `${service.excerpt} Free quotes in Brendale, serving north Brisbane.`,
+  );
+
   return {
-    title: service.name,
-    description: service.excerpt,
+    title: { absolute: clamp(title, 62) },
+    description,
     alternates: { canonical: `/services/${service.slug}` },
     openGraph: {
       title: `${service.name} | ${site.name}`,
-      description: service.excerpt,
+      description,
       images: [{ url: service.image }],
     },
   };
@@ -110,6 +122,8 @@ export default async function ServiceDetailPage({
                   </p>
                 ))}
               </div>
+
+              <ServiceAreaNote service={service.shortName.toLowerCase()} />
             </div>
 
             <aside className="lg:sticky lg:top-28 lg:self-start">
